@@ -2,6 +2,14 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Environment Variables
+
+This app reads your NewsAPI key from an environment variable.
+
+- Create a file named `.env` in the project root (or copy `.env.example` to `.env`)
+- Add: `REACT_APP_NEWS_API_KEY=YOUR_KEY_HERE`
+- Restart the dev server after changing `.env`
+
 ## Available Scripts
 
 In the project directory, you can run:
