@@ -8,6 +8,34 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.nm-gradient-text {
+  background: linear-gradient(90deg, var(--bs-info), var(--bs-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.nm-card {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.nm-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.18);
+}
+
+.navbar .nav-link.active {
+  text-decoration: underline;
+  text-underline-offset: 8px;
+}
+
+.nm-state {
+  min-height: 30vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

@@ -1,12 +1,12 @@
 import React from 'react'
-import loading from '../loading.gif'
 
-const Spinner =()=>{
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
-  <img src={loading} alt="loading..." style={{ width: "110px", height: "110px" }} />
-</div>
-    )
+const Spinner = () => {
+  return (
+    <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '30vh' }}>
+      <div className="spinner-border" role="status" aria-label="Loading"></div>
+      <div className="text-body-secondary small mt-2">Loading news…</div>
+    </div>
+  );
+};
 
-}
 export default Spinner;

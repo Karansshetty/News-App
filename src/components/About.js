@@ -4,7 +4,7 @@ const About = () => {
   return (
     <div className="container py-4">
       <div className="text-center mb-4">
-        <h1 className="mb-2">About NewsMonkey</h1>
+        <h1 className="mb-2 nm-gradient-text">About NewsMonkey</h1>
         <p className="lead mb-0">
           Stay updated with the latest headlines in one place.
         </p>
@@ -39,7 +39,7 @@ const About = () => {
               <div className="row g-3">
                 <div className="col-12 col-md-6">
                   <div className="border rounded p-3 h-100">
-                    <h6 className="mb-2">Quick overview</h6>
+                    <h6 className="mb-2">⚡ Quick overview</h6>
                     <p className="mb-0 small text-muted">
                       Skim multiple stories quickly with a clean card layout.
                     </p>
@@ -47,7 +47,7 @@ const About = () => {
                 </div>
                 <div className="col-12 col-md-6">
                   <div className="border rounded p-3 h-100">
-                    <h6 className="mb-2">Easy reading</h6>
+                    <h6 className="mb-2">📰 Easy reading</h6>
                     <p className="mb-0 small text-muted">
                       Headlines and summaries designed for readability.
                     </p>
@@ -55,7 +55,7 @@ const About = () => {
                 </div>
                 <div className="col-12 col-md-6">
                   <div className="border rounded p-3 h-100">
-                    <h6 className="mb-2">Fresh updates</h6>
+                    <h6 className="mb-2">🔄 Fresh updates</h6>
                     <p className="mb-0 small text-muted">
                       See new stories as they are published and picked up in headlines.
                     </p>
@@ -63,7 +63,7 @@ const About = () => {
                 </div>
                 <div className="col-12 col-md-6">
                   <div className="border rounded p-3 h-100">
-                    <h6 className="mb-2">Original sources</h6>
+                    <h6 className="mb-2">🔗 Original sources</h6>
                     <p className="mb-0 small text-muted">
                       Read the full article on the publisher’s website.
                     </p>

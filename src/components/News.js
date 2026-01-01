@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import NewsItem from "./NewsItem";
 import Spinner from "./Spinner";
 
 const News=(props)=> {
+
+  const location = useLocation();
 
   const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(false)
@@ -13,18 +16,56 @@ const News=(props)=> {
 
   const apiKey = process.env.REACT_APP_NEWS_API_KEY;
 
-  const buildUrl = (pageNumber) =>
-    `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}&page=${pageNumber}&pageSize=${props.pageSize}`;
+  const category = props.category || null;
+  const isSearchMode = props.mode === 'search' || location.pathname.startsWith('/search');
+
+  const query = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    return q ? String(q).trim() : '';
+  }, [location.search]);
+
+  const categoryLabel = useMemo(() => {
+    if (!category) return null;
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  }, [category]);
+
+  const heading = useMemo(() => {
+    if (isSearchMode) return query ? `Search results for "${query}"` : 'Search News';
+    if (categoryLabel) return `${categoryLabel} Headlines`;
+    return 'Top Headlines';
+  }, [isSearchMode, query, categoryLabel]);
+
+  const buildUrl = (pageNumber) => {
+    if (isSearchMode) {
+      if (!query) return null;
+      return `https://newsapi.org/v2/everything?q=${encodeURIComponent(
+        query
+      )}&apiKey=${apiKey}&page=${pageNumber}&pageSize=${props.pageSize}&language=en&sortBy=publishedAt`;
+    }
+    const categoryParam = category ? `&category=${encodeURIComponent(category)}` : '';
+    return `https://newsapi.org/v2/top-headlines?country=us${categoryParam}&apiKey=${apiKey}&page=${pageNumber}&pageSize=${props.pageSize}`;
+  };
 
   const fetchNews = async (pageNumber, options = {}) => {
     if (!apiKey) {
       setError('Missing API key. Set REACT_APP_NEWS_API_KEY in a .env file, then restart the dev server.');
       return;
     }
+
+    const url = buildUrl(pageNumber);
+    if (!url) {
+      setArticles([]);
+      setTotalResults(0);
+      setPage(1);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const data = await fetch(buildUrl(pageNumber), options);
+      const data = await fetch(url, options);
       const parsedData = await data.json();
 
       if (!data.ok) {
@@ -63,41 +104,104 @@ const News=(props)=> {
     fetchNews(1, { signal: controller.signal });
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.pageSize]);
+  }, [props.pageSize, category, isSearchMode, query]);
+
+  const totalPages = Math.ceil(totalResults / props.pageSize) || 0;
+  const canGoPrev = page > 1;
+  const canGoNext = totalPages > 0 && page < totalPages;
+
+  const badgeText = isSearchMode ? 'Search' : (categoryLabel || 'News');
+
+  const renderSkeletons = () => {
+    const count = Math.min(Number(props.pageSize) || 6, 12);
+    return Array.from({ length: count }).map((_, idx) => (
+      <div className="col-12 col-sm-6 col-lg-4" key={`skeleton-${idx}`}>
+        <div className="card h-100 nm-card">
+          <div className="card-img-top bg-body-secondary placeholder" style={{ height: '180px' }} />
+          <div className="card-body">
+            <div className="placeholder-glow">
+              <span className="placeholder col-8"></span>
+              <span className="placeholder col-6"></span>
+              <span className="placeholder col-10"></span>
+              <span className="placeholder col-7"></span>
+            </div>
+            <div className="mt-3">
+              <span className="placeholder btn btn-secondary disabled col-5"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  };
     return (
       <div className="container">
-        <h1 className="text-center">Top Headlines</h1>
-        {loading&&<Spinner/>}
+        <div className="text-center my-3">
+          <h1 className="nm-gradient-text mb-1">{heading}</h1>
+          <p className="text-body-secondary mb-0 small">
+            {isSearchMode ? 'Powered by NewsAPI /everything' : 'Powered by NewsAPI /top-headlines'}
+          </p>
+        </div>
+
+        {loading && <Spinner />}
+
         {!loading && error && (
-          <div className="alert alert-danger" role="alert">
-            {error}
+          <div className="nm-state">
+            <div className="alert alert-danger mb-0" role="alert">
+              {error}
+            </div>
           </div>
         )}
+
+        {!loading && !error && articles.length === 0 && (
+          <div className="nm-state">
+            <div className="text-center">
+              <h5 className="mb-2">{isSearchMode ? 'No results' : 'No articles found'}</h5>
+              <p className="text-body-secondary mb-0">
+                {isSearchMode
+                  ? (query
+                      ? `No results found for "${query}". Try a different keyword.`
+                      : 'Type a keyword in the search box and press Enter.')
+                  : 'Try another category or refresh.'}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="row g-4 my-3">
-          {!loading&&articles.map((element, index) => {
-            return (
-              <div className="col-12 col-sm-6 col-lg-4" key={element?.url || `${element?.publishedAt || 'na'}-${index}`}>
-                <NewsItem
-                  title={element.title}
-                  description={element.description}
-                  imgUrl={element.urlToImage}
-                  newsUrl={element.url}
-                />
-              </div>
-            );
-          })}
+          {loading
+            ? renderSkeletons()
+            : articles.map((element, index) => (
+                <div
+                  className="col-12 col-sm-6 col-lg-4"
+                  key={element?.url || `${element?.publishedAt || 'na'}-${index}`}
+                >
+                  <NewsItem
+                    title={element.title}
+                    description={element.description}
+                    imgUrl={element.urlToImage}
+                    newsUrl={element.url}
+                    badgeText={badgeText}
+                  />
+                </div>
+              ))}
         </div>
-        <div className="container d-flex justify-content-between">
+
+        <div className="container d-flex align-items-center justify-content-between gap-3">
           <button
             type="button"
-            disabled={page <= 1}
+            disabled={!canGoPrev}
             className="btn btn-dark"
             onClick={handlePreviousClick}
           >
             &larr; Previous
           </button>
+
+          <div className="text-center small text-body-secondary flex-grow-1">
+            {totalPages > 0 ? `Page ${page} of ${totalPages}` : ''}
+          </div>
+
           <button
-          disabled={page+1>Math.ceil(totalResults/props.pageSize)}
+            disabled={!canGoNext}
             type="button"
             className="btn btn-dark"
             onClick={handleNextClick}
